@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class Polygon : MonoBehaviour {
@@ -7,19 +9,27 @@ public class Polygon : MonoBehaviour {
     public Vector3 point = Vector3.up;
     [Range(-1, 10)]public int numberOfPoints = -1;
     public bool GenerateAtStart = false;
-
+   
     private Mesh        mesh;
     private Material    material;
     private Shader      shader;
     private Vector3[]   vertices;
     private int[]       triangles;
+    private Action CallbackFunction { get; set; }
+
+    public Vector2 size;
 
     void Start () {
         if (GenerateAtStart)
         {
-            StartCoroutine(CheckKeyDown());
             Generate();
         }
+    }
+
+    public void StartInteractivity(Action callback)
+    {
+        CallbackFunction = callback;
+        StartCoroutine(CheckKeyDown());
     }
 
     public void Generate(int count = -1)
@@ -34,10 +44,12 @@ public class Polygon : MonoBehaviour {
 
     IEnumerator CheckKeyDown()
     {
+        Debug.Log("GENERATE SHAPE"); 
         while (true)
         {
             while (!Input.GetKeyDown(KeyCode.G)) yield return null;
             GenerateRandomShape();
+            CallbackFunction();
             yield return null;
         }
     }
@@ -45,24 +57,29 @@ public class Polygon : MonoBehaviour {
 	private void GenerateRandomShape()
 	{
         int randomNumber = numberOfPoints;
-        while (randomNumber == numberOfPoints) randomNumber = Random.Range(4, 7);
+        while (randomNumber == numberOfPoints) randomNumber = Random.Range(3, 8);
 	    numberOfPoints = randomNumber;
-            
-	    GenerateShape();
+        GenerateShape(numberOfPoints);
 	}
 
     public void GenerateShape(int pointCount = -1)
     {
-        if (numberOfPoints < 0 || pointCount < 0) numberOfPoints = Random.Range(4, 7);
+        if (numberOfPoints < 0 || pointCount < 0) numberOfPoints = Random.Range(3, 8);
         else numberOfPoints = pointCount < 0 ? numberOfPoints : pointCount;
         mesh = new Mesh();
+        size = new Vector2(0, 0);
         mesh.name = "PolygonMesh";
         vertices = mesh.vertices = new Vector3[numberOfPoints + 1];
         triangles = mesh.triangles = new int[numberOfPoints * 3];
         float angle = -360f / numberOfPoints;
+        Vector3 vertex;
+        
         for (int v = 1, t = 1; v < vertices.Length; v++, t += 3)
         {
-            vertices[v] = Quaternion.Euler(0f, 0f, angle * (v - 1)) * point;
+            vertex = Quaternion.Euler(0f, 0f, angle * (v - 1)) * point;
+            vertices[v] = vertex;
+            if (vertex.x > size.x) size.x = vertex.x;
+            if (vertex.y > size.y) size.y = vertex.y;
             triangles[t] = v;
             triangles[t + 1] = v + 1;
         }
