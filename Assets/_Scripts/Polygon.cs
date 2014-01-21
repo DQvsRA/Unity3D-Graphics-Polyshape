@@ -18,6 +18,7 @@ public class Polygon : MonoBehaviour {
     private Action CallbackFunction { get; set; }
 
     public Vector2 size;
+    public Color color;
 
     void Start () {
         if (GenerateAtStart)
@@ -90,7 +91,8 @@ public class Polygon : MonoBehaviour {
         mesh.triangles = triangles;
 
         GetComponent<MeshFilter>().mesh = mesh;
-        material.SetColor("_Color", Utils_RandomColor());
+        color = Utils_RandomColor();
+        material.SetColor("_Color", color);
     }
 
     private Color Utils_RandomColor(float alpha = 1.0f)

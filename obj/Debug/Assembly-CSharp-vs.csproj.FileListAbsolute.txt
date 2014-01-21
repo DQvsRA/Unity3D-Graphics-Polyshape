@@ -1,0 +1,1 @@
+C:\Development\Unity3D\PolyshapeGenerator\obj\Debug\Assembly-CSharp-vs.csprojResolveAssemblyReference.cache
