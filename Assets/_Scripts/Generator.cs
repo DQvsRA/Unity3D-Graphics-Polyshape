@@ -13,7 +13,8 @@ public class Generator : MonoBehaviour
 
     private GameObject go, container;
     private Polygon poly;
-    
+    private string userline = "initialize";
+
     // Use this for initialization
     private void Start()
     {
@@ -53,6 +54,15 @@ public class Generator : MonoBehaviour
         go.renderer.enabled = false;
     }
 
+    public void DoWork(string line)
+    {
+        userline = line;
+        Debug.Log("DOWORK -> userline: " + userline);
+        int sides = Random.Range(3, 8);
+        poly.GenerateShape();
+        OnRegenerate();
+    }
+
     private void OnRegenerate()
     {
         GenerateGrid();
@@ -61,13 +71,12 @@ public class Generator : MonoBehaviour
 
     private void ManageAnalytics()
     {
-        Vector2 size = poly.size;
+        
         Color color = poly.color;
         ParseObject polygonPO = new ParseObject("Polygon");
 
         int score = Random.Range((int)0, (int)10000);
         string str = "The User Has Score: " + Random.Range((int)0, (int)10000).ToString();
-        DateTime date = DateTime.Now;
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes("Welcome aboard!");
         IList<object> list = new List<object> { str, score };
         IDictionary<string, object> dictionary = new Dictionary<string, object>
@@ -79,7 +88,8 @@ public class Generator : MonoBehaviour
         var polyGridDictionary = new Dictionary<string, string> {
           { "sides", Convert.ToString(poly.numberOfPoints) },
           { "grid", Convert.ToString(rows.ToString() + "x" + columns.ToString())},
-          { "color", Convert.ToString(color.r.ToString() + ";" + color.g.ToString() + ";" + color.b.ToString())}
+          { "color", Convert.ToString(color.r.ToString() + ";" + color.g.ToString() + ";" + color.b.ToString())},
+          { "uuid", userline }
         };
         polygonPO["sides"] = poly.numberOfPoints; // number
         polygonPO["score"] = score; // number
