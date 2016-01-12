@@ -5,9 +5,13 @@ using Parse;
 using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
+using System.Threading.Tasks;
 
 public class Generator : MonoBehaviour
 {
+    private int _prevRows;
+    private int _prevCols;
+
     [Range(3, 30)] public int rows = 3;
     [Range(3, 30)] public int columns = 3;
 
@@ -20,11 +24,14 @@ public class Generator : MonoBehaviour
     {
         int sides = Random.Range(3, 8);
 
+        _prevRows = rows;
+        _prevCols = columns;
+
         go = new GameObject();
         go.name = "Polygon";
         container = new GameObject();
         container.name = "Poly Container";
-        poly = go.AddComponent("Polygon") as Polygon;
+        poly = go.AddComponent<Polygon>() as Polygon;
         poly.Generate(sides);
         poly.StartInteractivity(OnRegenerate);
         OnRegenerate();
@@ -37,7 +44,7 @@ public class Generator : MonoBehaviour
         Vector2 size = poly.size;
         Transform ct = container.transform;
         foreach (Transform child in ct) Destroy(child.gameObject);
-        go.renderer.enabled = true;
+        go.GetComponent<Renderer>().enabled = true;
        
         Vector3 pos = new Vector3();
         ct.position = new Vector3(0, 0, 0);
@@ -51,7 +58,7 @@ public class Generator : MonoBehaviour
         }
         
         ct.position = new Vector3(-pos.x * 0.5f, -pos.y * 0.5f, 0);
-        go.renderer.enabled = false;
+        go.GetComponent<Renderer>().enabled = false;
     }
 
     public void DoWork(string line)
@@ -71,7 +78,6 @@ public class Generator : MonoBehaviour
 
     private void ManageAnalytics()
     {
-        
         Color color = poly.color;
         ParseObject polygonPO = new ParseObject("Polygon");
 
@@ -107,9 +113,12 @@ public class Generator : MonoBehaviour
             { "cheatMode", false },
             { "skills", new List<string> { "pwnage", "flying" } },
         };
-        gameScore.SaveAsync();
-        polygonPO.SaveAsync();
-        ParseAnalytics.TrackEventAsync("GeneratePolyGrid", polyGridDictionary);
+        
+        ParseAnalytics.TrackEventAsync("GeneratePolyGrid", polyGridDictionary).ContinueWith(b=> {
+            gameScore.SaveAsync().ContinueWith(t => {
+                polygonPO.SaveAsync();
+            });
+        });
     }
 
 	// Update is called once per frame
