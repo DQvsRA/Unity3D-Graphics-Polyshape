@@ -1,4 +1,4 @@
 Unity3D-Graphics-Polyshape
 ==========================
 
-Генератор паттеронов
+Simple polygon patterns generator prototype and Parse usage example
